@@ -1,0 +1,24 @@
+# Сборка .NET
+bin/
+obj/
+
+# Сборка CMake
+build/
+out/
+.cmake/
+CMakeSettings.json
+CMakeUserPresets.json
+
+# Visual Studio / Rider
+.vs/
+.idea/
+*.user
+*.suo
+*.rsuser
+
+# Пакеты (NuGet)
+packages/
+*.nupkg
+
+# Прочее
+*.log
