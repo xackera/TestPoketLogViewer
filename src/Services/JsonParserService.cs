@@ -4,10 +4,13 @@ using TestPoketLogViewer.Models;
 
 namespace TestPoketLogViewer.Services
 {
+    /// <summary>
+    /// JSON парсер
+    /// </summary>
     public class JsonParserService
     {
         /// <summary>
-        /// Парсер. Пропускает битые файлы.
+        /// Парсер. Пропускает не валидные файлы.
         /// </summary>
         public List<PokerHand> ParseHandsFromFile(string filePath)
         {
@@ -32,7 +35,7 @@ namespace TestPoketLogViewer.Services
             catch (JsonException)
             {
                 // ошибка - пропускаю 
-               // Console.WriteLine($"[Ошибка] JSON-файл не валидный: {filePath}");
+                Console.WriteLine($"[Ошибка] JSON-файл не валидный: {filePath}");
             }
             catch (Exception)
             {

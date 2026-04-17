@@ -1,0 +1,290 @@
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Windows.Data;
+using System.Windows.Input;
+using TestPoketLogViewer.Models;
+using TestPoketLogViewer.Services;
+
+
+namespace TestPoketLogViewer.ViewModels
+{
+    public class MainViewModel : INotifyPropertyChanged
+    {
+        private readonly FolderScannerService _scannerService;
+        private readonly object _lockData = new object();
+        
+        // Сырые данные 
+        private List<PokerHand> _allHands = new List<PokerHand>();
+
+        public MainViewModel()
+        {
+            _scannerService = new FolderScannerService();
+            TableNames = new ObservableCollection<string>();
+            HandIds = new ObservableCollection<long>();
+
+            // разрешаю обновление из фоновых потоков
+            BindingOperations.EnableCollectionSynchronization(TableNames, _lockData);
+            BindingOperations.EnableCollectionSynchronization(HandIds, _lockData);
+
+            // Инициализация команд
+            StartScanCommand = new RelayCommand(ExecuteStartScan, CanExecuteStartScan);
+            SelectFolderCommand = new RelayCommand(ExecuteSelectFolder);
+        }
+
+        #region UI свойства
+
+        private string _selectedDirectory = string.Empty;
+        public string SelectedDirectory
+        {
+            get => _selectedDirectory;
+            set 
+            { 
+                _selectedDirectory = value; 
+                OnPropertyChanged();
+                CommandManager.InvalidateRequerySuggested();
+            }
+        }
+
+        private string _statusMessage = "Ожидание...";
+        public string StatusMessage
+        {
+            get => _statusMessage;
+            set { _statusMessage = value; OnPropertyChanged(); }
+        }
+
+        private bool _isScanning = false;
+        public bool IsScanning
+        {
+            get => _isScanning;
+            set
+            {
+                _isScanning = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsNotScanning));
+                CommandManager.InvalidateRequerySuggested();
+            }
+        }
+
+        public bool IsNotScanning => !_isScanning;
+
+        // Коллекция левой панели (уникальные названия столов)
+        public ObservableCollection<string> TableNames { get; }
+        
+        private string? _selectedTableName;
+        public string? SelectedTableName
+        {
+            get => _selectedTableName;
+            set
+            {
+                _selectedTableName = value;
+                OnPropertyChanged();
+                UpdateHandsList();
+            }
+        }
+
+        // Коллекция средней панели (ID раздач)
+        public ObservableCollection<long> HandIds { get; }
+        
+        private long? _selectedHandId;
+        public long? SelectedHandId
+        {
+            get => _selectedHandId;
+            set
+            {
+                _selectedHandId = value;
+                OnPropertyChanged();
+                UpdateHandDetails();
+            }
+        }
+
+        // Свойства правой панели (Детали)
+        private PokerHand? _selectedHandDetails;
+        public PokerHand? SelectedHandDetails
+        {
+            get => _selectedHandDetails;
+            set { _selectedHandDetails = value; OnPropertyChanged(); }
+        }
+
+        #endregion
+
+        #region Команды
+
+        public ICommand StartScanCommand { get; }
+        public ICommand SelectFolderCommand { get; }
+
+        private bool CanExecuteStartScan(object? parameter)
+        {
+            return !IsScanning && !string.IsNullOrWhiteSpace(SelectedDirectory);
+        }
+
+        private void ExecuteSelectFolder(object? parameter)
+        {
+#if NET8_0_OR_GREATER
+            // используем новый диалог выбора папки из WPF в .NET 8.0+
+            var dialog = new Microsoft.Win32.OpenFolderDialog
+            {
+                Title = "Выберите папку с файлами"
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                SelectedDirectory = dialog.FolderName;
+            }
+#else
+            // Вариант для .NET 6
+            using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
+            {
+                dialog.Description = "Выберите папку с файлами логов";
+                dialog.UseDescriptionForTitle = true;
+
+                if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                {
+                    SelectedDirectory = dialog.SelectedPath;
+                }
+            }
+#endif
+        }
+
+        private void ExecuteStartScan(object? parameter)
+        {
+            IsScanning = true;
+            StatusMessage = "Сканирование...";
+            
+            lock (_lockData)
+            {
+                _allHands.Clear();
+                TableNames.Clear();
+                HandIds.Clear();
+                SelectedHandDetails = null;
+            }
+
+            _scannerService.StartScanning(SelectedDirectory, OnDataParsed, OnScanComplete);
+        }
+
+        #endregion
+
+        #region Callback'и от потока
+
+        private void OnDataParsed(List<PokerHand> parsedHands)
+        {
+           
+            System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                lock (_lockData)
+                {
+                    bool currentTableAffected = false;
+
+                    foreach (var hand in parsedHands)
+                    {
+                        // Избегаем дублей 
+                        if (!_allHands.Any(h => h.HandId == hand.HandId))
+                        {
+                            _allHands.Add(hand);
+                        }
+                    }
+
+                    // Обновляем уникальные имена таблиц
+                    var newTables = parsedHands
+                        .Where(h => !string.IsNullOrEmpty(h.TableName))
+                        .Select(h => h.TableName!)
+                        .Distinct()
+                        .ToList();
+
+                    foreach (var tableName in newTables)
+                    {
+                        if (!TableNames.Contains(tableName))
+                        {
+                            // Сортировка по алфавиту "на лету" 
+                            InsertSorted(TableNames, tableName);
+                        }
+                        
+                        if (tableName == SelectedTableName)
+                        {
+                            currentTableAffected = true;
+                        }
+                    }
+
+                    // Если новые данные принадлежат к той же таблице, которую сейчас смотрит пользователь, обновим колонку раздач (HandID)
+                    if (currentTableAffected)
+                    {
+                        UpdateHandsList();
+                    }
+                }
+            }));
+        }
+
+        private void OnScanComplete(int processedCount, string? error)
+        {
+            System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                IsScanning = false;
+                if (error == null)
+                {
+                    StatusMessage = $"✅ Готово ({processedCount} файлов обработано)";
+                }
+                else
+                {
+                    StatusMessage = $"❌ Ошибка: {error}";
+                }
+            }));
+        }
+
+        #endregion
+
+        #region Вспомогательные методы
+        
+        private void UpdateHandsList()
+        {
+            lock (_lockData)
+            {
+                HandIds.Clear();
+                if (SelectedTableName != null)
+                {
+                    var ids = _allHands
+                        .Where(h => h.TableName == SelectedTableName)
+                        .Select(h => h.HandId)
+                        .Distinct();
+                        
+                    foreach (var id in ids)
+                    {
+                        HandIds.Add(id);
+                    }
+                }
+            }
+        }
+
+        private void UpdateHandDetails()
+        {
+            lock (_lockData)
+            {
+                if (SelectedHandId != null)
+                {
+                    SelectedHandDetails = _allHands.FirstOrDefault(h => h.HandId == SelectedHandId);
+                }
+                else
+                {
+                    SelectedHandDetails = null;
+                }
+            }
+        }
+
+        private void InsertSorted(ObservableCollection<string> collection, string item)
+        {
+            int index = 0;
+            while (index < collection.Count && string.Compare(collection[index], item, StringComparison.OrdinalIgnoreCase) < 0)
+            {
+                index++;
+            }
+            collection.Insert(index, item);
+        }
+
+        #endregion
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+    }
+}

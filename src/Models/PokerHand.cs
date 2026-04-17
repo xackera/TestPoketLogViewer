@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace TestPoketLogViewer.Models
 {
-    public class PokerHand
+    public record PokerHand
     {
         [JsonPropertyName("HandID")]
         public long HandId { get; set; }

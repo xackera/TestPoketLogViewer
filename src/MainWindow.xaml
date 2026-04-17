@@ -1,6 +1,140 @@
 <Window x:Class="TestPoketLogViewer.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Test Poker Log Viewer" Height="450" Width="800">
-    <Grid/>
+        xmlns:vm="clr-namespace:TestPoketLogViewer.ViewModels"
+        Title="Poker Log Viewer" Height="500" Width="900"
+        WindowStartupLocation="CenterScreen">
+    
+    <Window.DataContext>
+        <vm:MainViewModel/>
+    </Window.DataContext>
+
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Верхняя панель: Выбор папки -->
+        <Grid Grid.Row="0" Margin="0,0,0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            
+            <TextBlock Text="Папка:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+            <TextBox Grid.Column="1" Text="{Binding SelectedDirectory, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" Margin="0,0,10,0" IsEnabled="{Binding IsNotScanning}"/>
+            <Button Grid.Column="2" Content="Обзор..." Command="{Binding SelectFolderCommand}" Padding="10,5" Margin="0,0,10,0" IsEnabled="{Binding IsNotScanning}"/>
+            <Button Grid.Column="3" Content="Начать сканирование" Command="{Binding StartScanCommand}" Padding="10,5"/>
+        </Grid>
+
+        <!-- Основная область: 3 панели -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="2*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Левая панель: TableNames -->
+            <GroupBox Header="Столы (TableName)" Grid.Column="0" Margin="0,0,5,0">
+                <ListBox ItemsSource="{Binding TableNames}" SelectedItem="{Binding SelectedTableName}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}"/>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </GroupBox>
+
+            <!-- Средняя панель: HandIDs -->
+            <GroupBox Header="Раздачи (HandID)" Grid.Column="1" Margin="5,0,5,0">
+                <Grid>
+                    <TextBlock Text="Выберите стол" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Gray">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedTableName}" Value="{x:Null}">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <ListBox ItemsSource="{Binding HandIds}" SelectedItem="{Binding SelectedHandId}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}"/>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+            </GroupBox>
+
+            <!-- Правая панель: Детали -->
+            <GroupBox Header="Детали раздачи" Grid.Column="2" Margin="5,0,0,0">
+                <Grid>
+                    <!-- Placeholder -->
+                    <TextBlock Text="Выберите раздачу" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Gray">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedHandDetails}" Value="{x:Null}">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+
+                    <!-- Контент -->
+                    <StackPanel Margin="10">
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedHandDetails}" Value="{x:Null}">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+
+                        <TextBlock Text="Игроки:" FontWeight="Bold" Margin="0,0,0,5"/>
+                        <ItemsControl ItemsSource="{Binding SelectedHandDetails.Players}" Margin="10,0,0,15">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <TextBlock Text="Победители:" FontWeight="Bold" Margin="0,0,0,5"/>
+                        <ItemsControl ItemsSource="{Binding SelectedHandDetails.Winners}" Margin="10,0,0,15">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}" Foreground="Green" FontWeight="SemiBold"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <TextBlock Text="Сумма выигрыша:" FontWeight="Bold" Margin="0,0,0,5"/>
+                        <TextBlock Text="{Binding SelectedHandDetails.WinAmount}" Margin="10,0,0,0" FontSize="16"/>
+                    </StackPanel>
+                </Grid>
+            </GroupBox>
+        </Grid>
+
+        <!-- Статус бар -->
+        <StatusBar Grid.Row="2" Margin="0,10,0,0" Background="Transparent">
+            <StatusBarItem>
+                <TextBlock Text="{Binding StatusMessage}"/>
+            </StatusBarItem>
+        </StatusBar>
+    </Grid>
 </Window>

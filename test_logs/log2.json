@@ -1,0 +1,16 @@
+[
+  {
+    "HandID": 20001,
+    "TableName": "Vegas VIP",
+    "Players": ["Alice", "Bob", "Charlie", "Daniel"],
+    "Winners": ["Alice"],
+    "WinAmount": "15 000,00$"
+  },
+  {
+    "HandID": 20002,
+    "TableName": "Vegas VIP",
+    "Players": ["Alice", "Bob"],
+    "Winners": ["Alice", "Bob"],
+    "WinAmount": "Split (2 000,00$)"
+  }
+]
