@@ -58,7 +58,18 @@
             <TextBlock Text="{DynamicResource LblFolder}" VerticalAlignment="Center" Margin="0,0,10,0"/>
             <TextBox Grid.Column="1" Text="{Binding SelectedDirectory, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" Margin="0,0,10,0" IsEnabled="{Binding IsNotScanning}"/>
             <Button Grid.Column="2" Content="{DynamicResource BtnBrowse}" Command="{Binding SelectFolderCommand}" Padding="10,5" Margin="0,0,10,0" IsEnabled="{Binding IsNotScanning}"/>
-            <Button Grid.Column="3" Content="{DynamicResource BtnStartScan}" Command="{Binding StartScanCommand}" Padding="10,5"/>
+            <Button Grid.Column="3" Command="{Binding StartScanCommand}" Padding="10,5">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Content" Value="{DynamicResource BtnStartScan}"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsScanning}" Value="True">
+                                <Setter Property="Content" Value="{DynamicResource BtnStopScan}"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
         </Grid>
 
         <!-- Основная область: поиск и 3 панели -->

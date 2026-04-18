@@ -180,7 +180,7 @@ namespace TestPoketLogViewer.ViewModels
 
         private bool CanExecuteStartScan(object? parameter)
         {
-            return !IsScanning && !string.IsNullOrWhiteSpace(SelectedDirectory);
+            return !string.IsNullOrWhiteSpace(SelectedDirectory);
         }
 
         private void ExecuteSelectFolder(object? parameter)
@@ -213,6 +213,15 @@ namespace TestPoketLogViewer.ViewModels
 
         private void ExecuteStartScan(object? parameter)
         {
+            if (IsScanning)
+            {
+                // Останавливаем
+                _scannerService.StopScanning();
+                IsScanning = false;
+                StatusMessage = GetLocalizedString("StatusWait");
+                return;
+            }
+
             IsScanning = true;
             StatusMessage = GetLocalizedString("StatusScan");
             
@@ -283,13 +292,17 @@ namespace TestPoketLogViewer.ViewModels
         {
             System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
-                IsScanning = false;
                 if (error == null)
                 {
-                    StatusMessage = $"{GetLocalizedString("StatusDone")} {processedCount}";
+                    // Если пользователь не нажал "Остановить" во время загрузки, значит наблюдатель включен
+                    if (IsScanning) 
+                    {
+                        StatusMessage = $"{GetLocalizedString("StatusWatching")} {processedCount}";
+                    }
                 }
                 else
                 {
+                    IsScanning = false;
                     StatusMessage = $"{GetLocalizedString("StatusError")} {error}";
                 }
             }));

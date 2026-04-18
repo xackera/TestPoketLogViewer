@@ -11,6 +11,7 @@ namespace TestPoketLogViewer.Services
         private readonly JsonParserService _parser;
         private FileSystemWatcher? _watcher;
         private Action<List<PokerHand>>? _onDataParsedCallback;
+        private volatile bool _isStopped;
 
         public FolderScannerService()
         {
@@ -18,7 +19,7 @@ namespace TestPoketLogViewer.Services
         }
 
         /// <summary>
-        /// Метод сканирует папку в отдельном потоке
+        /// Запуск сканирования и наблюдателя за изменениями в папке
         /// </summary>
         /// <param name="path">Путь к папке</param>
         /// <param name="onDataParsed">Callback при успешном парсинге файла (возвращает список моделей)</param>
@@ -26,6 +27,7 @@ namespace TestPoketLogViewer.Services
         public void StartScanning(string path, Action<List<PokerHand>> onDataParsed, Action<int, string?> onComplete)
         {
             _onDataParsedCallback = onDataParsed;
+            _isStopped = false;
 
             Thread sThread = new Thread(() =>
             {
@@ -42,6 +44,8 @@ namespace TestPoketLogViewer.Services
                         
                         foreach (var file in files)
                         {
+                            if (_isStopped) break;
+
                             var hands = _parser.ParseHandsFromFile(file);
                             if (hands != null && hands.Count > 0)
                             {
@@ -102,9 +106,29 @@ namespace TestPoketLogViewer.Services
 
             // Обрабатываю файл в отдельном (background) потоке
             var hands = _parser.ParseHandsFromFile(e.FullPath);
-            if (hands != null && hands.Count > 0 && _onDataParsedCallback != null)
+            if (hands != null && hands.Count > 0 && _onDataParsedCallback != null && !_isStopped)
             {
                 _onDataParsedCallback.Invoke(hands);
+            }
+        }
+
+        /// <summary>
+        /// Остановка сканирования
+        /// </summary>
+        public void StopScanning()
+        {
+            _isStopped = true;
+            if (_watcher != null)
+            {
+                try
+                {
+                    _watcher.EnableRaisingEvents = false;
+                    _watcher.Dispose();
+                    _watcher = null;
+                } catch(Exception) { 
+                
+                }
+                
             }
         }
     }
