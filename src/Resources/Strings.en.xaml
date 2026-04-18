@@ -1,0 +1,21 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=System.Runtime">
+    <sys:String x:Key="LblFolder">Folder:</sys:String>
+    <sys:String x:Key="BtnBrowse">Browse...</sys:String>
+    <sys:String x:Key="BtnStartScan">Start Scanning</sys:String>
+    <sys:String x:Key="LblSearch">Search (Table or Hand):</sys:String>
+    <sys:String x:Key="TitleTables">Tables (TableName)</sys:String>
+    <sys:String x:Key="TitleHands">Hands (HandID)</sys:String>
+    <sys:String x:Key="TitleDetails">Hand Details</sys:String>
+    <sys:String x:Key="SelectTable">Select a table</sys:String>
+    <sys:String x:Key="SelectHand">Select a hand</sys:String>
+    <sys:String x:Key="LblPlayers">Players:</sys:String>
+    <sys:String x:Key="LblWinners">Winners:</sys:String>
+    <sys:String x:Key="LblAmount">Win Amount:</sys:String>
+    <sys:String x:Key="StatusWait">Waiting...</sys:String>
+    <sys:String x:Key="StatusScan">Scanning...</sys:String>
+    <sys:String x:Key="StatusDone">✅ Done files:</sys:String>
+    <sys:String x:Key="StatusError">❌ Error:</sys:String>
+    <sys:String x:Key="DialogTitle">Select folder with logs</sys:String>
+</ResourceDictionary>

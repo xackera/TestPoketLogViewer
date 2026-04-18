@@ -37,6 +37,10 @@ namespace TestPoketLogViewer.ViewModels
             // Инициализация команд
             StartScanCommand = new RelayCommand(ExecuteStartScan, CanExecuteStartScan);
             SelectFolderCommand = new RelayCommand(ExecuteSelectFolder);
+            SwitchLanguageCommand = new RelayCommand(ExecuteSwitchLanguage);
+
+            // Инициализация стартового статуса
+            StatusMessage = GetLocalizedString("StatusWait");
         }
 
         #region UI свойства
@@ -53,12 +57,16 @@ namespace TestPoketLogViewer.ViewModels
             }
         }
 
-        private string _statusMessage = "Ожидание...";
+        private string _statusMessage = "";
         public string StatusMessage
         {
             get => _statusMessage;
             set { _statusMessage = value; OnPropertyChanged(); }
         }
+
+        private string _currentLanguage = "ru";
+        public bool IsRuSelected => _currentLanguage == "ru";
+        public bool IsEnSelected => _currentLanguage == "en";
 
         private bool _isScanning = false;
         public bool IsScanning
@@ -136,6 +144,39 @@ namespace TestPoketLogViewer.ViewModels
 
         public ICommand StartScanCommand { get; }
         public ICommand SelectFolderCommand { get; }
+        public ICommand SwitchLanguageCommand { get; }
+
+        /// <summary>
+        /// Переключение языка
+        /// </summary>
+        private void ExecuteSwitchLanguage(object? parameter)
+        {
+            if (parameter is string lang && _currentLanguage != lang)
+            {
+                _currentLanguage = lang;
+                OnPropertyChanged(nameof(IsRuSelected));
+                OnPropertyChanged(nameof(IsEnSelected));
+
+                var dict = new System.Windows.ResourceDictionary { Source = new Uri($"Resources/Strings.{lang}.xaml", UriKind.Relative) };
+                System.Windows.Application.Current.Resources.MergedDictionaries.Clear();
+                System.Windows.Application.Current.Resources.MergedDictionaries.Add(dict);
+                
+                // текущий статус
+                if (IsScanning)
+                    StatusMessage = GetLocalizedString("StatusScan");
+                else
+                    StatusMessage = GetLocalizedString("StatusWait");
+            }
+        }
+
+        /// <summary>
+        /// Плучение строки с перевдом
+        /// </summary>
+        private string GetLocalizedString(string key)
+        {
+            var r = System.Windows.Application.Current.Resources[key];
+            return r as string ?? key;
+        }
 
         private bool CanExecuteStartScan(object? parameter)
         {
@@ -159,7 +200,7 @@ namespace TestPoketLogViewer.ViewModels
             // Вариант для .NET 6
             using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
             {
-                dialog.Description = "Выберите папку с файлами логов";
+                dialog.Description = GetLocalizedString("DialogTitle");
                 dialog.UseDescriptionForTitle = true;
 
                 if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
@@ -173,7 +214,7 @@ namespace TestPoketLogViewer.ViewModels
         private void ExecuteStartScan(object? parameter)
         {
             IsScanning = true;
-            StatusMessage = "Сканирование...";
+            StatusMessage = GetLocalizedString("StatusScan");
             
             lock (_lockData)
             {
@@ -245,11 +286,11 @@ namespace TestPoketLogViewer.ViewModels
                 IsScanning = false;
                 if (error == null)
                 {
-                    StatusMessage = $"✅ Готово ({processedCount} файлов обработано)";
+                    StatusMessage = $"{GetLocalizedString("StatusDone")} {processedCount}";
                 }
                 else
                 {
-                    StatusMessage = $"❌ Ошибка: {error}";
+                    StatusMessage = $"{GetLocalizedString("StatusError")} {error}";
                 }
             }));
         }

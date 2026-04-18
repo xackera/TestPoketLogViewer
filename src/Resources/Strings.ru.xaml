@@ -1,0 +1,21 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=System.Runtime">
+    <sys:String x:Key="LblFolder">Папка:</sys:String>
+    <sys:String x:Key="BtnBrowse">Обзор...</sys:String>
+    <sys:String x:Key="BtnStartScan">Начать сканирование</sys:String>
+    <sys:String x:Key="LblSearch">Поиск (Стол или раздача):</sys:String>
+    <sys:String x:Key="TitleTables">Столы (TableName)</sys:String>
+    <sys:String x:Key="TitleHands">Раздачи (HandID)</sys:String>
+    <sys:String x:Key="TitleDetails">Детали раздачи</sys:String>
+    <sys:String x:Key="SelectTable">Выберите стол</sys:String>
+    <sys:String x:Key="SelectHand">Выберите раздачу</sys:String>
+    <sys:String x:Key="LblPlayers">Игроки:</sys:String>
+    <sys:String x:Key="LblWinners">Победители:</sys:String>
+    <sys:String x:Key="LblAmount">Сумма выигрыша:</sys:String>
+    <sys:String x:Key="StatusWait">Ожидание...</sys:String>
+    <sys:String x:Key="StatusScan">Сканирование...</sys:String>
+    <sys:String x:Key="StatusDone">✅ Готово файлов:</sys:String>
+    <sys:String x:Key="StatusError">❌ Ошибка:</sys:String>
+    <sys:String x:Key="DialogTitle">Выберите папку с файлами</sys:String>
+</ResourceDictionary>

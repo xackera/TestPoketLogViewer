@@ -37,3 +37,6 @@ set_property(TARGET TestPoketLogViewer PROPERTY VS_GLOBAL_Nullable "enable")
 
 # Устанавливаем App.xaml как ApplicationDefinition
 set_source_files_properties("src/App.xaml" PROPERTIES VS_XAML_TYPE "ApplicationDefinition")
+
+# Добавляем тестовый проект
+add_subdirectory(tests)

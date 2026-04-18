@@ -16,8 +16,38 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
+        <!-- Переключатель языка -->
+        <StackPanel Grid.Row="0" HorizontalAlignment="Right" VerticalAlignment="Top" Orientation="Horizontal" Margin="0,-5,0,5">
+            <Button Content="RU" Command="{Binding SwitchLanguageCommand}" CommandParameter="ru" Padding="5,0" Width="30" Margin="0,0,5,0" Background="Transparent" BorderThickness="0" Cursor="Hand">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Foreground" Value="Gray"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsRuSelected}" Value="True">
+                                <Setter Property="Foreground" Value="Black"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+            <Button Content="EN" Command="{Binding SwitchLanguageCommand}" CommandParameter="en" Padding="5,0" Width="30" Background="Transparent" BorderThickness="0" Cursor="Hand">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Foreground" Value="Gray"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsEnSelected}" Value="True">
+                                <Setter Property="Foreground" Value="Black"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+        </StackPanel>
+
         <!-- Верхняя панель: Выбор папки -->
-        <Grid Grid.Row="0" Margin="0,0,0,10">
+        <Grid Grid.Row="0" Margin="0,20,0,10">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
@@ -25,10 +55,10 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             
-            <TextBlock Text="Папка:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+            <TextBlock Text="{DynamicResource LblFolder}" VerticalAlignment="Center" Margin="0,0,10,0"/>
             <TextBox Grid.Column="1" Text="{Binding SelectedDirectory, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" Margin="0,0,10,0" IsEnabled="{Binding IsNotScanning}"/>
-            <Button Grid.Column="2" Content="Обзор..." Command="{Binding SelectFolderCommand}" Padding="10,5" Margin="0,0,10,0" IsEnabled="{Binding IsNotScanning}"/>
-            <Button Grid.Column="3" Content="Начать сканирование" Command="{Binding StartScanCommand}" Padding="10,5"/>
+            <Button Grid.Column="2" Content="{DynamicResource BtnBrowse}" Command="{Binding SelectFolderCommand}" Padding="10,5" Margin="0,0,10,0" IsEnabled="{Binding IsNotScanning}"/>
+            <Button Grid.Column="3" Content="{DynamicResource BtnStartScan}" Command="{Binding StartScanCommand}" Padding="10,5"/>
         </Grid>
 
         <!-- Основная область: поиск и 3 панели -->
@@ -44,7 +74,7 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Text="Поиск (Стол или раздача):" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                <TextBlock Text="{DynamicResource LblSearch}" VerticalAlignment="Center" Margin="0,0,10,0"/>
                 <TextBox Grid.Column="1" Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center"/>
             </Grid>
 
@@ -56,7 +86,7 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Левая панель: TableNames -->
-                <GroupBox Header="Столы (TableName)" Grid.Column="0" Margin="0,0,5,0">
+                <GroupBox Header="{DynamicResource TitleTables}" Grid.Column="0" Margin="0,0,5,0">
                     <ListBox ItemsSource="{Binding TableNamesView}" SelectedItem="{Binding SelectedTableName}">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
@@ -67,9 +97,9 @@
                 </GroupBox>
 
                 <!-- Средняя панель: HandIDs -->
-                <GroupBox Header="Раздачи (HandID)" Grid.Column="1" Margin="5,0,5,0">
+                <GroupBox Header="{DynamicResource TitleHands}" Grid.Column="1" Margin="5,0,5,0">
                     <Grid>
-                        <TextBlock Text="Выберите стол" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Gray">
+                        <TextBlock Text="{DynamicResource SelectTable}" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Gray">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="Visibility" Value="Collapsed"/>
@@ -92,10 +122,10 @@
                 </GroupBox>
 
             <!-- Правая панель: Детали -->
-            <GroupBox Header="Детали раздачи" Grid.Column="2" Margin="5,0,0,0">
+            <GroupBox Header="{DynamicResource TitleDetails}" Grid.Column="2" Margin="5,0,0,0">
                 <Grid>
                     <!-- Placeholder -->
-                    <TextBlock Text="Выберите раздачу" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Gray">
+                    <TextBlock Text="{DynamicResource SelectHand}" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Gray">
                         <TextBlock.Style>
                             <Style TargetType="TextBlock">
                                 <Setter Property="Visibility" Value="Collapsed"/>
@@ -121,7 +151,7 @@
                             </Style>
                         </StackPanel.Style>
 
-                        <TextBlock Text="Игроки:" FontWeight="Bold" Margin="0,0,0,5"/>
+                        <TextBlock Text="{DynamicResource LblPlayers}" FontWeight="Bold" Margin="0,0,0,5"/>
                         <ItemsControl ItemsSource="{Binding SelectedHandDetails.Players}" Margin="10,0,0,15">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
@@ -130,7 +160,7 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
 
-                        <TextBlock Text="Победители:" FontWeight="Bold" Margin="0,0,0,5"/>
+                        <TextBlock Text="{DynamicResource LblWinners}" FontWeight="Bold" Margin="0,0,0,5"/>
                         <ItemsControl ItemsSource="{Binding SelectedHandDetails.Winners}" Margin="10,0,0,15">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
@@ -139,7 +169,7 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
 
-                        <TextBlock Text="Сумма выигрыша:" FontWeight="Bold" Margin="0,0,0,5"/>
+                        <TextBlock Text="{DynamicResource LblAmount}" FontWeight="Bold" Margin="0,0,0,5"/>
                         <TextBlock Text="{Binding SelectedHandDetails.WinAmount}" Margin="10,0,0,0" FontSize="16"/>
                     </StackPanel>
                 </Grid>
