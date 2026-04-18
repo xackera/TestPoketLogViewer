@@ -27,6 +27,13 @@ namespace TestPoketLogViewer.ViewModels
             BindingOperations.EnableCollectionSynchronization(TableNames, _lockData);
             BindingOperations.EnableCollectionSynchronization(HandIds, _lockData);
 
+            // фильтрации
+            TableNamesView = CollectionViewSource.GetDefaultView(TableNames);
+            TableNamesView.Filter = FilterTables;
+
+            HandIdsView = CollectionViewSource.GetDefaultView(HandIds);
+            HandIdsView.Filter = FilterHands;
+
             // Инициализация команд
             StartScanCommand = new RelayCommand(ExecuteStartScan, CanExecuteStartScan);
             SelectFolderCommand = new RelayCommand(ExecuteSelectFolder);
@@ -68,8 +75,24 @@ namespace TestPoketLogViewer.ViewModels
 
         public bool IsNotScanning => !_isScanning;
 
+        private string _searchQuery = string.Empty;
+        public string SearchQuery
+        {
+            get => _searchQuery;
+            set
+            {
+                _searchQuery = value;
+                OnPropertyChanged();
+                
+                // При вводе текста обновляем фильтры в обоих списках
+                TableNamesView.Refresh();
+                HandIdsView.Refresh();
+            }
+        }
+
         // Коллекция левой панели (уникальные названия столов)
         public ObservableCollection<string> TableNames { get; }
+        public ICollectionView TableNamesView { get; }
         
         private string? _selectedTableName;
         public string? SelectedTableName
@@ -85,6 +108,7 @@ namespace TestPoketLogViewer.ViewModels
 
         // Коллекция средней панели (ID раздач)
         public ObservableCollection<long> HandIds { get; }
+        public ICollectionView HandIdsView { get; }
         
         private long? _selectedHandId;
         public long? SelectedHandId
@@ -277,6 +301,40 @@ namespace TestPoketLogViewer.ViewModels
                 index++;
             }
             collection.Insert(index, item);
+        }
+
+        private bool FilterTables(object item)
+        {
+            if (string.IsNullOrWhiteSpace(SearchQuery)) return true;
+            
+            if (item is string tableName)
+            {
+                // Фильтр по названию стола
+                if (tableName.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase)) return true;
+                
+                // Или если внутри стола есть HandID, который ищет пользователь
+                lock (_lockData)
+                {
+                    return _allHands.Any(h => h.TableName == tableName && h.HandId.ToString().Contains(SearchQuery));
+                }
+            }
+            return false;
+        }
+
+        private bool FilterHands(object item)
+        {
+            if (string.IsNullOrWhiteSpace(SearchQuery)) return true;
+            
+            if (item is long handId)
+            {
+                // Фильтр по номеру раздачи
+                if (handId.ToString().Contains(SearchQuery)) return true;
+                
+                // Если пользователь ввел название стола и он совпадает с текущим, показываю его раздачи
+                if (SelectedTableName != null && SelectedTableName.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+            return false;
         }
 
         #endregion

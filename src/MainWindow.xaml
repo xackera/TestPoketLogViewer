@@ -31,49 +31,65 @@
             <Button Grid.Column="3" Content="Начать сканирование" Command="{Binding StartScanCommand}" Padding="10,5"/>
         </Grid>
 
-        <!-- Основная область: 3 панели -->
+        <!-- Основная область: поиск и 3 панели -->
         <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1*"/>
-                <ColumnDefinition Width="1*"/>
-                <ColumnDefinition Width="2*"/>
-            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            
+            <!-- Строка поиска -->
+            <Grid Grid.Row="0" Margin="0,0,0,10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Поиск (Стол или раздача):" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                <TextBox Grid.Column="1" Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center"/>
+            </Grid>
 
-            <!-- Левая панель: TableNames -->
-            <GroupBox Header="Столы (TableName)" Grid.Column="0" Margin="0,0,5,0">
-                <ListBox ItemsSource="{Binding TableNames}" SelectedItem="{Binding SelectedTableName}">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding}"/>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-            </GroupBox>
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="2*"/>
+                </Grid.ColumnDefinitions>
 
-            <!-- Средняя панель: HandIDs -->
-            <GroupBox Header="Раздачи (HandID)" Grid.Column="1" Margin="5,0,5,0">
-                <Grid>
-                    <TextBlock Text="Выберите стол" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Gray">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding SelectedTableName}" Value="{x:Null}">
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
-                    <ListBox ItemsSource="{Binding HandIds}" SelectedItem="{Binding SelectedHandId}">
+                <!-- Левая панель: TableNames -->
+                <GroupBox Header="Столы (TableName)" Grid.Column="0" Margin="0,0,5,0">
+                    <ListBox ItemsSource="{Binding TableNamesView}" SelectedItem="{Binding SelectedTableName}">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding}"/>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
-                </Grid>
-            </GroupBox>
+                </GroupBox>
+
+                <!-- Средняя панель: HandIDs -->
+                <GroupBox Header="Раздачи (HandID)" Grid.Column="1" Margin="5,0,5,0">
+                    <Grid>
+                        <TextBlock Text="Выберите стол" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Gray">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedTableName}" Value="{x:Null}">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                        <ListBox ItemsSource="{Binding HandIdsView}" SelectedItem="{Binding SelectedHandId}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}"/>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Grid>
+                </GroupBox>
 
             <!-- Правая панель: Детали -->
             <GroupBox Header="Детали раздачи" Grid.Column="2" Margin="5,0,0,0">
@@ -128,6 +144,7 @@
                     </StackPanel>
                 </Grid>
             </GroupBox>
+        </Grid>
         </Grid>
 
         <!-- Статус бар -->
