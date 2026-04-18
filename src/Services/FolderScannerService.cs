@@ -6,16 +6,16 @@ namespace TestPoketLogViewer.Services
     /// <summary>
     /// Серквис для сканирования папки на наличие JSON файлов и парсинга их в модели PokerHand.
     /// </summary>
-    public class FolderScannerService
+    public class FolderScannerService : IFolderScannerService
     {
-        private readonly JsonParserService _parser;
+        private readonly IJsonParserService _parser;
         private FileSystemWatcher? _watcher;
         private Action<List<PokerHand>>? _onDataParsedCallback;
         private volatile bool _isStopped;
 
-        public FolderScannerService()
+        public FolderScannerService(IJsonParserService parser)
         {
-            _parser = new JsonParserService();
+            _parser = parser;
         }
 
         /// <summary>

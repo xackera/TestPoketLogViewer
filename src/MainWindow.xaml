@@ -4,10 +4,6 @@
         xmlns:vm="clr-namespace:TestPoketLogViewer.ViewModels"
         Title="Poker Log Viewer" Height="500" Width="900"
         WindowStartupLocation="CenterScreen">
-    
-    <Window.DataContext>
-        <vm:MainViewModel/>
-    </Window.DataContext>
 
     <Grid Margin="10">
         <Grid.RowDefinitions>

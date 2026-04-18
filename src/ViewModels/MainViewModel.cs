@@ -11,15 +11,15 @@ namespace TestPoketLogViewer.ViewModels
 {
     public class MainViewModel : INotifyPropertyChanged
     {
-        private readonly FolderScannerService _scannerService;
+        private readonly IFolderScannerService _scannerService;
         private readonly object _lockData = new object();
         
         // Сырые данные 
         private List<PokerHand> _allHands = new List<PokerHand>();
 
-        public MainViewModel()
+        public MainViewModel(IFolderScannerService scannerService)
         {
-            _scannerService = new FolderScannerService();
+            _scannerService = scannerService ?? throw new ArgumentNullException(nameof(scannerService));
             TableNames = new ObservableCollection<string>();
             HandIds = new ObservableCollection<long>();
 

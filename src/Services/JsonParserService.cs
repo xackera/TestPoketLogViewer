@@ -7,7 +7,7 @@ namespace TestPoketLogViewer.Services
     /// <summary>
     /// JSON парсер
     /// </summary>
-    public class JsonParserService
+    public class JsonParserService : IJsonParserService
     {
         /// <summary>
         /// Парсер. Пропускает не валидные файлы.
